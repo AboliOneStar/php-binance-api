@@ -1132,6 +1132,22 @@ class API
         $qstring = ($test === false) ? "v3/order" : "v3/order/test";
         return $this->httpRequest($qstring, "POST", $opt, true);
     }
+	
+    public function oco(string $side, string $symbol, $quantity, $price, $stopPrice, $stopLimitPrice){
+        $opt = [
+            "side" => $side,
+            "symbol" => $symbol,
+            "quantity" => $quantity,
+            "price" => $price,
+            "stopPrice" => $stopPrice,
+            "stopLimitPrice" => $stopLimitPrice,
+            "timestamp" => $this->time(),
+            "stopLimitTimeInForce"=>"GTC",
+            "recvWindow" => 60000,
+        ];
+
+        return $this->httpRequest('v3/order/oco', "POST", $opt, true);
+    }
 
     /**
      * candlesticks get the candles for the given intervals
