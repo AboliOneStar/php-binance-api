@@ -2204,9 +2204,17 @@ class API
 
         $this->subscriptions['@userdata'] = true;
 
+        $loop = \React\EventLoop\Factory::create();
+        $loop->addPeriodicTimer(60*5, function () {
+            $listenKey = $this->listenKey;
+            $this->httpRequest("v1/userDataStream?listenKey={$listenKey}", "PUT", []);
+            echo 'Reload '.date('H:i:s').'!'.PHP_EOL;
+        });
+        $connector = new \Ratchet\Client\Connector($loop);
+
         // @codeCoverageIgnoreStart
         // phpunit can't cover async function
-        \Ratchet\Client\connect($this->stream . $this->listenKey)->then(function ($ws) {
+        $connector($this->stream . $this->listenKey)->then(function ($ws) {
             $ws->on('message', function ($data) use ($ws) {
                 if ($this->subscriptions['@userdata'] === false) {
                     //$this->subscriptions[$endpoint] = null;
@@ -2233,6 +2241,8 @@ class API
             // WPCS: XSS OK.
             echo "userData: Could not connect: {$e->getMessage()}" . PHP_EOL;
         });
+
+        $loop->run();
         // @codeCoverageIgnoreEnd
     }
 
